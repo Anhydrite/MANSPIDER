@@ -114,18 +114,12 @@ def main():
 
         if options.verbose:
             log.setLevel('DEBUG')
-
+        
         # make sure extension formats are valid
-        for i, extension in enumerate(options.extensions):
-            if extension and not extension.startswith('.'):
-                extension = f'.{extension}'
-            options.extensions[i] = extension.lower()
+        options.extensions = format_extension(parse_coma_and_space(options.extensions))
 
         # make sure extension blacklist is valid
-        for i, extension in enumerate(options.exclude_extensions):
-            if not extension.startswith('.'):
-                extension = f'.{extension}'
-            options.exclude_extensions[i] = extension.lower()
+        options.exclude_extensions = format_extension(parse_coma_and_space(options.exclude_extensions))
 
         # lowercase share names
         options.sharenames = [s.lower() for s in options.sharenames]

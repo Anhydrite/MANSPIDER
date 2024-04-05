@@ -1,4 +1,5 @@
 import os
+from typing import List, Set
 import magic
 import string
 import random
@@ -140,3 +141,25 @@ def rmdir(directory):
         else:
             item.unlink()
     directory.rmdir()
+
+
+def parse_coma_and_space(args_list: List[str]) -> List[str]:
+    new_set: Set[str] = set()
+    for arg in args_list:
+        if "," in arg:
+            new_set.update(arg.split(","))
+        else:
+            new_set.add(arg)
+
+    return list(new_set)
+
+def format_extension(extensions_list: List[str]) -> List[str]:
+    new_list: List[str] = []
+    for extension in extensions_list:
+        extension = extension.lower().strip()
+        if not extension.startswith("."):
+            new_list.append(f".{extension}")
+        else:
+            new_list.append(extension)
+
+    return new_list
