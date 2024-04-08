@@ -136,6 +136,7 @@ def main():
         p = multiprocessing.Process(target=go, args=(options,), daemon=False)
         p.start()
         listener.start()
+
     except argparse.ArgumentError as e:
         syntax_error = True
         log.error(e)

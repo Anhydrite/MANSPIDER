@@ -142,8 +142,12 @@ def rmdir(directory):
             item.unlink()
     directory.rmdir()
 
-
 def parse_coma_and_space(args_list: List[str]) -> List[str]:
+    '''
+    Takes a list as input. 
+    Splits each argument by coma into two separated one.
+    All values will be deduplicated.
+    '''
     new_set: Set[str] = set()
     for arg in args_list:
         if "," in arg:
@@ -154,12 +158,24 @@ def parse_coma_and_space(args_list: List[str]) -> List[str]:
     return list(new_set)
 
 def format_extension(extensions_list: List[str]) -> List[str]:
-    new_list: List[str] = []
+    '''
+    Takes a list of extension as input.
+    Lower and strip each one and adds a leading dot if not already present.
+    All values will be deduplicated
+    '''
+    new_set: Set[str] = set()
     for extension in extensions_list:
         extension = extension.lower().strip()
         if not extension.startswith("."):
-            new_list.append(f".{extension}")
+            new_set.add(f".{extension}")
         else:
-            new_list.append(extension)
+            new_set.add(extension)
 
-    return new_list
+    return list(new_set)
+
+def lower_list(list_: List[str]) -> List[str]:
+    '''
+    Takes a list of str as input.
+    Each value will be lowered.
+    '''
+    return list(map(lambda a: a.lower(), list_))
