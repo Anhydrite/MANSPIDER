@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import shlex
 import sys
 import pathlib
 import logging
@@ -88,7 +89,7 @@ def main():
     parser.add_argument('-H', '--hash',         default='',                 help='NTLM hash for authentication')
     parser.add_argument('-t', '--threads',      type=int,   default=5,      help='concurrent threads (default: 5)')
     parser.add_argument('-f', '--filenames', nargs='+', default=[],         help=f'filter filenames using regex (space-separated)', metavar='REGEX')
-    parser.add_argument('-e', '--extensions',nargs='+', default=[],         help='only show filenames with these extensions (space-separated, e.g. `docx xlsx` for only word & excel docs)', metavar='EXT')
+    parser.add_argument('-e', '--extensions',nargs='+', default=[],         help='only show filenames with these extensions (space-separated or coma-separated, e.g. `docx xlsx` or `docx,xlsx` for only word & excel docs)', metavar='EXT')
     parser.add_argument('--exclude-extensions',nargs='+', default=[],       help='ignore files with these extensions', metavar='EXT')
     parser.add_argument('-c', '--content',   nargs='+', default=[],         help='search for file content using regex (multiple supported)', metavar='REGEX')
     parser.add_argument('--sharenames',      nargs='+', default=[],         help='only search shares with these names (multiple supported)', metavar='SHARE')
@@ -104,6 +105,7 @@ def main():
     
 
     syntax_error = False
+    
     try:
 
         if len(sys.argv) == 1:
@@ -111,33 +113,29 @@ def main():
             sys.exit(1)
 
         options = parser.parse_args()
-
         if options.verbose:
             log.setLevel('DEBUG')
-        
-        # make sure extension formats are valid
+
+        # make sure extension formats are valid, separated by space or coma then lowered
         options.extensions = format_extension(parse_coma_and_space(options.extensions))
 
-        # make sure extension blacklist is valid
+        # make sure extension blacklist is valid, separated by space or coma then lowered
         options.exclude_extensions = format_extension(parse_coma_and_space(options.exclude_extensions))
 
-        # lowercase share names
-        options.sharenames = [s.lower() for s in options.sharenames]
-        options.exclude_sharenames = [s.lower() for s in options.exclude_sharenames]
+        # Parses shares parameters, separated by space or coma then lowered
+        options.sharenames = lower_list(parse_coma_and_space(options.sharenames))
+        options.exclude_sharenames = lower_list(parse_coma_and_space(options.exclude_sharenames))
 
-        # lowercase directory names
-        options.dirnames = [s.lower() for s in options.dirnames]
-        options.exclude_dirnames = [s.lower() for s in options.exclude_dirnames]
+        # Parses directories parameters, separated by space or coma then lowered
+        options.dirnames = lower_list(parse_coma_and_space(options.dirnames))
+        options.exclude_dirnames = lower_list(parse_coma_and_space(options.exclude_dirnames))
 
-        # deduplicate targets
-        targets = set()
-        [[targets.add(t) for t in g] for g in options.targets]
-        options.targets = list(targets)
+        # Unpack the list, because it's a list in a list, ex: [["192.168.1.1"]]
+        options.targets = parse_coma_and_space(*options.targets)
 
         p = multiprocessing.Process(target=go, args=(options,), daemon=False)
         p.start()
         listener.start()
-
     except argparse.ArgumentError as e:
         syntax_error = True
         log.error(e)
